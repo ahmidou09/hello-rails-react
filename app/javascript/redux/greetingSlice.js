@@ -1,43 +1,35 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
 import axios from "axios";
-const initialState = {
-  greeting: "",
-  isLoading: true,
-  error: null,
-};
-const url = "/api/greetings/random";
-export const getGreetingsAsync = createAsyncThunk(
-  "greetings/Async",
+
+const url = "http://127.0.0.1:3000/api/greetings";
+
+export const fetchGreetings = createAsyncThunk(
+  "message/fetchGreetings",
   async () => {
     try {
-      const res = await axios.get(url);
-      const { data } = res;
-      return data;
-    } catch (e) {
-      return e.message;
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
   }
 );
-const greetingSlice = createSlice({
-  name: "greetings",
+
+const initialState = {
+  message: "",
+  isLoading: true,
+};
+
+const messageSlice = createSlice({
+  name: "message",
   initialState,
-  extraReducers(builder) {
-    builder
-      .addCase(getGreetingsAsync.pending, (state) => ({
-        ...state,
-        isLoading: true,
-      }))
-      .addCase(getGreetingsAsync.fulfilled, (state, action) => ({
-        ...state,
-        greeting: action.payload,
-        isLoading: false,
-      }))
-      .addCase(getGreetingsAsync.rejected, (state, action) => ({
-        ...state,
-        isLoading: false,
-        error: action.error.message,
-      }));
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchGreetings.fulfilled, (state, action) => {
+      state.message = action.payload.content;
+      state.isLoading = false;
+    });
   },
 });
-export default greetingSlice.reducer;
+
+export default messageSlice.reducer;
